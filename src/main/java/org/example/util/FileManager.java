@@ -8,10 +8,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class FileManager {
     private final LanguageManager languageManager;
+    private String lastUsedFilePath;
     public FileManager(LanguageManager languageManager) {
         this.languageManager = languageManager;
     }
-    public void saveData(CryptoCalculator calculator, String filePath, CalculationService calculationService) {
+    private String ensureTxtExtension(String filePath) {
+        if (!filePath.endsWith(".txt")) {
+            return filePath + ".txt";
+        }
+        return filePath;
+    }
+    private void updateLastUsedFilePath(String filePath) {
+        this.lastUsedFilePath = ensureTxtExtension(filePath);
+    }
+    public void saveData(CryptoCalculator calculator, String filePath) {
+        filePath = ensureTxtExtension(filePath);
+        updateLastUsedFilePath(filePath);
         try (PrintWriter out = new PrintWriter(new FileWriter(filePath))) {
             out.println(languageManager.getString("hashrate") + ": = " + calculator.getHashRate() + " TH/s");
             out.println(languageManager.getString("power_consumption") + ": = " + calculator.getPowerConsumption() + " Watts");
@@ -19,25 +31,14 @@ public class FileManager {
             out.println(languageManager.getString("energy_cost") + ": = " + calculator.getElectricityCost() + " PLN/kWh");
             out.println(languageManager.getString("crypto_price") + ": = " + calculator.getCryptoPrice() + " PLN");
 
-//            if (calculationService.calculateDailyMining(calculator) != 0){
-//            out.println(languageManager.getString("daily_mining") + ": = " + calculationService.calculateDailyMining(calculator) + " " + languageManager.getString("coins"));
-//            }
-//            if (calculationService.calculateDailyEnergyCost(calculator)!= 0){
-//            out.println(languageManager.getString("energy_cost") + ": = " + calculationService.calculateDailyEnergyCost(calculator) + " PLN");
-//            }
-//            if (calculationService.calculateDailyProfit(calculator)!= 0) {
-//                out.println(languageManager.getString("daily_profit") + ": = " + calculationService.calculateDailyProfit(calculator) + " PLN");
-//            }
-//            if (calculationService.calculateDaysToBreakEven(calculator)!= 0) {
-//                out.println(languageManager.getString("break_even_days") + ": = " + calculationService.calculateDaysToBreakEven(calculator) + " " + languageManager.getString("days"));
-//            }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public CryptoCalculator loadData(String filePath) {
+        filePath = ensureTxtExtension(filePath);
+        updateLastUsedFilePath(filePath);
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             double hashRate = 0.0;
             double powerconsumption = 0.0;
@@ -51,9 +52,9 @@ public class FileManager {
                 String key = parts[0].trim();
                 double value = Double.parseDouble(parts[1].split(" ")[0]);
 
-                if (key.equals(languageManager.getString("power"))) {
+                if (key.equals(languageManager.getString("hashrate"))) {
                     hashRate = value;
-                } else if (key.equals(languageManager.getString("energy_consumption"))) {
+                } else if (key.equals(languageManager.getString("power_consumption"))) {
                     powerconsumption = value;
                 } else if (key.equals(languageManager.getString("initial_cost"))) {
                     initialCost = value;
@@ -70,4 +71,7 @@ public class FileManager {
             return null;
         }
     }
+        public String getLastUsedFilePath() {
+            return lastUsedFilePath;
+        }
 }
