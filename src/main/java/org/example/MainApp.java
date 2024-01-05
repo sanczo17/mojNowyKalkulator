@@ -33,6 +33,8 @@ public class MainApp extends Application {
         this.primaryStage = stage;
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/main.fxml"));
+        fxmlLoader.setResources(ResourceBundle.getBundle("messages", languageManager.getLocale()));
+        fxmlLoader.setControllerFactory(springContext::getBean);
         rootNode = fxmlLoader.load();
 
         FXMLController controller = fxmlLoader.getController();
