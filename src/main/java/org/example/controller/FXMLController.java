@@ -17,14 +17,9 @@ import javafx.stage.Stage;
 @Component
 public class FXMLController {
 
-    @Autowired
-    private CalculationService calculationService;
-
-    @Autowired
-    private LanguageManager languageManager;
-
-    @Autowired
-    private FileManager fileManager;
+    private final CalculationService calculationService;
+    private final LanguageManager languageManager;
+    private final FileManager fileManager;
 
     @FXML
     private MenuBar menuBar;
@@ -42,21 +37,31 @@ public class FXMLController {
     private Double lastBreakEvenDays = null;
     private Stage primaryStage;
 
+    @Autowired
+    public FXMLController(CalculationService calculationService, LanguageManager languageManager, FileManager fileManager) {
+        this.calculationService = calculationService;
+        this.languageManager = languageManager;
+        this.fileManager = fileManager;
+    }
+
     public void setPrimaryStage(Stage primaryStage) {
         this.primaryStage = primaryStage;
         updateTitle();
-        }
+    }
+
     @FXML
     public void initialize() {
         switchLanguage(Locale.getDefault());
         setupMenu();
         calculateButton.setOnAction(e -> calculateAction());
     }
+
     private void updateTitle() {
         if (primaryStage != null && languageManager != null) {
             primaryStage.setTitle(languageManager.getString("title"));
         }
     }
+
     private void setupMenu() {
         menuBar.getMenus().clear();
         Menu menu = new Menu(languageManager.getString("menu"));
@@ -73,6 +78,7 @@ public class FXMLController {
         menu.getItems().addAll(menuItemLoad, menuItemSave, menuItemSwitchLanguage);
         menuBar.getMenus().add(menu);
     }
+
     private void calculateAction() {
         try {
             double hashRate = parseDouble(hashRateField.getText());
@@ -92,6 +98,7 @@ public class FXMLController {
             showAlert("Error", languageManager.getString("invalidInput"));
         }
     }
+
     private double parseDouble(String value) throws NumberFormatException {
         if (value == null) {
             throw new NumberFormatException("Value is null");
@@ -99,6 +106,7 @@ public class FXMLController {
         value = value.replace(',', '.').trim();
         return Double.parseDouble(value);
     }
+
     private void switchLanguageAction() {
         Locale currentLocale = languageManager.getLocale();
         Locale newLocale = "pl".equals(currentLocale.getLanguage()) ? new Locale("en") : new Locale("pl");
@@ -160,13 +168,19 @@ public class FXMLController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-    private void loadAction() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Data File");
 
+    private void clearLastCalculatedValues() {
+        lastDailyMiningValue = null;
+        lastDailyEnergyCost = null;
+        lastDailyProfit = null;
+        lastBreakEvenDays = null;
+        updateLabels();
+    }
+    private FileChooser createFileChooser(String title) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(title);
         FileChooser.ExtensionFilter txtFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(txtFilter);
-
         String lastPath = fileManager.getLastUsedFilePath();
         if (lastPath != null) {
             File defaultDirectory = new File(lastPath).getParentFile();
@@ -174,8 +188,13 @@ public class FXMLController {
                 fileChooser.setInitialDirectory(defaultDirectory);
             }
         }
+        return fileChooser;
+    }
 
+    private void loadAction() {
+        FileChooser fileChooser = createFileChooser("Open Data File");
         File file = fileChooser.showOpenDialog(null);
+
         if (file != null) {
             CryptoCalculator calculator = fileManager.loadData(file.getPath());
             if (calculator != null) {
@@ -189,40 +208,31 @@ public class FXMLController {
                 lastDailyProfit = null;
                 lastBreakEvenDays = null;
                 updateLabels();
+                clearLastCalculatedValues();
             } else {
-                showAlert("Error", languageManager.getString("failedToLoad"));
+                showAlert("Load Error", languageManager.getString("failedToLoad"));
             }
         }
     }
+
     private void saveAction() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Data File");
-
-        FileChooser.ExtensionFilter txtFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
-        fileChooser.getExtensionFilters().add(txtFilter);
-
-        String lastPath = fileManager.getLastUsedFilePath();
-        if (lastPath != null) {
-            File defaultDirectory = new File(lastPath).getParentFile();
-            if(defaultDirectory != null && defaultDirectory.exists()) {
-                fileChooser.setInitialDirectory(defaultDirectory);
-            }
-        }
-
+        FileChooser fileChooser = createFileChooser("Save Data File");
         File file = fileChooser.showSaveDialog(null);
+
         if (file != null) {
             try {
                 CryptoCalculator calculator = new CryptoCalculator(
-                        Double.parseDouble(hashRateField.getText()),
-                        Double.parseDouble(powerConsumptionField.getText()),
-                        Double.parseDouble(electricityCostField.getText()),
-                        Double.parseDouble(cryptoPriceField.getText()),
-                        Double.parseDouble(initialCostField.getText()));
+                        parseDouble(hashRateField.getText()),
+                        parseDouble(powerConsumptionField.getText()),
+                        parseDouble(electricityCostField.getText()),
+                        parseDouble(cryptoPriceField.getText()),
+                        parseDouble(initialCostField.getText()));
 
                 fileManager.saveData(calculator, file.getPath());
             } catch (NumberFormatException e) {
-                showAlert("Error", languageManager.getString("invalidInput"));
+                showAlert("Input Error", languageManager.getString("invalidInput"));
             }
         }
     }
+
 }
