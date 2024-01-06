@@ -124,7 +124,7 @@ public class FXMLController {
         menuItemSwitchLanguage.setText(languageManager.getString("switch_language"));
 
         calculateButton.setText(languageManager.getString("calculate"));
-        hashRateLabel.setText(languageManager.getString("hashrate"));
+        hashRateLabel.setText(languageManager.getString("hash_rate"));
         powerConsumptionLabel.setText(languageManager.getString("power_consumption"));
         initialCostLabel.setText(languageManager.getString("initial_cost"));
         electricityCostLabel.setText(languageManager.getString("energy_cost"));
@@ -198,11 +198,11 @@ public class FXMLController {
         if (file != null) {
             CryptoCalculator calculator = fileManager.loadData(file.getPath());
             if (calculator != null) {
-                hashRateField.setText(String.valueOf(calculator.getHashRate()));
-                powerConsumptionField.setText(String.valueOf(calculator.getPowerConsumption()));
-                electricityCostField.setText(String.valueOf(calculator.getElectricityCost()));
-                cryptoPriceField.setText(String.valueOf(calculator.getCryptoPrice()));
-                initialCostField.setText(String.valueOf(calculator.getInitialCost()));
+                hashRateField.setText(String.valueOf(calculator.hashRate()));
+                powerConsumptionField.setText(String.valueOf(calculator.powerConsumption()));
+                electricityCostField.setText(String.valueOf(calculator.electricityCost()));
+                cryptoPriceField.setText(String.valueOf(calculator.cryptoPrice()));
+                initialCostField.setText(String.valueOf(calculator.initialCost()));
                 lastDailyMiningValue = null;
                 lastDailyEnergyCost = null;
                 lastDailyProfit = null;

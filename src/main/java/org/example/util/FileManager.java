@@ -31,11 +31,11 @@ public class FileManager {
         filePath = ensureTxtExtension(filePath);
         updateLastUsedFilePath(filePath);
         try (PrintWriter out = new PrintWriter(new FileWriter(filePath))) {
-            out.println(languageManager.getString("hashrate") + ": = " + calculator.getHashRate() + " TH/s");
-            out.println(languageManager.getString("power_consumption") + ": = " + calculator.getPowerConsumption() + " Watts");
-            out.println(languageManager.getString("initial_cost") + ": = " + calculator.getInitialCost() + " PLN");
-            out.println(languageManager.getString("energy_cost") + ": = " + calculator.getElectricityCost() + " PLN/kWh");
-            out.println(languageManager.getString("crypto_price") + ": = " + calculator.getCryptoPrice() + " PLN");
+            out.println(languageManager.getString("hash_rate") + ": = " + calculator.hashRate() + " TH/s");
+            out.println(languageManager.getString("power_consumption") + ": = " + calculator.powerConsumption() + " Watts");
+            out.println(languageManager.getString("initial_cost") + ": = " + calculator.initialCost() + " PLN");
+            out.println(languageManager.getString("energy_cost") + ": = " + calculator.electricityCost() + " PLN/kWh");
+            out.println(languageManager.getString("crypto_price") + ": = " + calculator.cryptoPrice() + " PLN");
         } catch (IOException e) {
             logger.error("Error saving data to file: {}", filePath, e);
         }
@@ -58,7 +58,7 @@ public class FileManager {
                     String key = parts[0].trim();
                     double value = Double.parseDouble(parts[1].split(" ")[0].trim().replace(',', '.'));
 
-                    if (key.equals(languageManager.getString("hashrate"))) {
+                    if (key.equals(languageManager.getString("hash_rate"))) {
                         hashRate = value;
                     } else if (key.equals(languageManager.getString("power_consumption"))) {
                         powerConsumption = value;
